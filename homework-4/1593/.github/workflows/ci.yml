@@ -1,0 +1,27 @@
+name: ci
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run:  for dir in $(find . -type d -not -path "./homework-4/1593" -name Cargo.toml -exec dirname {} \;); do
+            echo "Building in $dir..."
+            (cd "$dir" && cargo build) || exit 1
+          done
+    - name: Run tests
+      run: for dir in $(find . -type d -not -path "./homework-4/1593" -name Cargo.toml -exec dirname {} \;); do
+            echo "Building in $dir..."
+            (cd "$dir" && cargo test) || exit 1
