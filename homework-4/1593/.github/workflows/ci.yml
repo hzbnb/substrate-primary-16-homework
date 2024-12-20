@@ -25,3 +25,4 @@ jobs:
       run: for dir in $(find . -type d -not -path "./homework-4/1593" -name Cargo.toml -exec dirname {} \;); do
             echo "Building in $dir..."
             (cd "$dir" && cargo test) || exit 1
+           done
