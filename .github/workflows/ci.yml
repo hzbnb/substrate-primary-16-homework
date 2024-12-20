@@ -17,7 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build
-      run:   cd /homework-4/1593 && cargo build
+      run:   cd homework-4/1593 && cargo build
        
     - name: Run tests
-      run: cd /homework-4/1593 && cargo test
+      run: cd homework-4/1593 && cargo test
