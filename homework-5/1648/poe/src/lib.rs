@@ -111,6 +111,9 @@ pub mod pallet {
                 Proofs::<T>::get(&claim).ok_or(Error::<T>::ClaimNotExists)?;
             ensure!(who == owner, Error::<T>::NotOwner);
 
+            // remove old relation
+            Proofs::<T>::remove(&claim);
+
             Proofs::<T>::insert(&claim, (&to, block_number));
 
             Self::deposit_event(Event::ClaimTransfered { owner: to, claim });
