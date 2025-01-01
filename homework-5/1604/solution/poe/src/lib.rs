@@ -1,9 +1,11 @@
-
 // We make sure this pallet uses `no_std` for compiling to Wasm.
 #![cfg_attr(not(feature = "std"), no_std)]
 
 // Re-export pallet items so that they can be accessed from the crate namespace.
+use frame_support::pallet_prelude::*;
+use frame_system::pallet_prelude::*;
 pub use pallet::*;
+pub use weights::*;
 
 // FRAME pallets require their own "mock runtimes" to be able to run unit tests. This module
 // contains a mock runtime specific for testing this pallet's functionality.
@@ -20,16 +22,14 @@ mod tests;
 // for each dispatchable and generates this pallet's weight.rs file. Learn more about benchmarking here: https://docs.substrate.io/test/benchmark/
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
+
 pub mod weights;
-pub use weights::*;
 
 // All pallet logic is defined in its own module and must be annotated by the `pallet` attribute.
 #[frame_support::pallet]
 pub mod pallet {
     // Import various useful types required by all FRAME pallets.
     use super::*;
-    use frame_support::pallet_prelude::*;
-    use frame_system::pallet_prelude::*;
 
     // The `Pallet` struct serves as a placeholder to implement traits, methods and dispatchables
     // (`Call`s) in this pallet.
@@ -64,7 +64,6 @@ pub mod pallet {
         BoundedVec<u8, T::MaxClaimLength>,
         (T::AccountId, BlockNumberFor<T>),
     >;
-    // pub type Something<T> = StorageValue<_, u32>;
 
     /// Events that functions in this pallet can emit.
     ///
@@ -80,7 +79,7 @@ pub mod pallet {
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
         ClaimCreated(T::AccountId, BoundedVec<u8, T::MaxClaimLength>),
-	ClaimRevoked(T::AccountId, BoundedVec<u8, T::MaxClaimLength>),
+	    ClaimRevoked(T::AccountId, BoundedVec<u8, T::MaxClaimLength>),
     }
 
     /// Errors that can be returned by this pallet.
@@ -94,13 +93,9 @@ pub mod pallet {
     #[pallet::error]
     pub enum Error<T> {
         ProofAlreadyExist,
-	ClaimTooLong,
-	ClaimNotExist,
-	NotClaimOwner,
-        /// The value retrieved was `None` as no value was previously set.
-        NoneValue,
-        /// There was an attempt to increment the value in storage over `u32::MAX`.
-        StorageOverflow,
+	    ClaimTooLong,
+	    ClaimNotExist,
+	    NotClaimOwner,
     }
 
     #[pallet::hooks]
@@ -120,11 +115,6 @@ pub mod pallet {
     /// The [`weight`] macro is used to assign a weight to each call.
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        /// An example dispatchable that takes a single u32 value as a parameter, writes the value
-        /// to storage and emits an event.
-        ///
-        /// It checks that the _origin_ for this call is _Signed_ and returns a dispatch
-        /// error if it isn't. Learn more about origins here: <https://docs.substrate.io/build/origins/>
         #[pallet::call_index(0)]
 		#[pallet::weight(T::WeightInfo::create_claim(claim.len() as u32))]
 		pub fn create_claim(origin: OriginFor<T>, claim: BoundedVec<u8, T::MaxClaimLength>) -> DispatchResultWithPostInfo {
@@ -142,19 +132,6 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-        /// An example dispatchable that may throw a custom error.
-        ///
-        /// It checks that the caller is a signed origin and reads the current value from the
-        /// `Something` storage item. If a current value exists, it is incremented by 1 and then
-        /// written back to storage.
-        ///
-        /// ## Errors
-        ///
-        /// The function will return an error under the following conditions:
-        ///
-        /// - If no value has been set ([`Error::NoneValue`])
-        /// - If incrementing the value in storage causes an arithmetic overflow
-        ///   ([`Error::StorageOverflow`])
         #[pallet::call_index(1)]
 		#[pallet::weight(T::WeightInfo::revoke_claim(claim.len() as u32))]
 		pub fn revoke_claim(origin: OriginFor<T>, claim: BoundedVec<u8, T::MaxClaimLength>) -> DispatchResultWithPostInfo {
